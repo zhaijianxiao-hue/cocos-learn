@@ -637,6 +637,10 @@
       "__id__": 11
     },
     "collectDistance": 58,
+    "spawnMinX": -520,
+    "spawnMaxX": 520,
+    "spawnMinY": -280,
+    "spawnMaxY": 280,
     "_id": "c0q3f0aB5KdJttocslfErc"
   },
   {
