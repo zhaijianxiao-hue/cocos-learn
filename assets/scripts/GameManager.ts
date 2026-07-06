@@ -3,6 +3,12 @@ import { PlayerController } from './PlayerController';
 
 const { ccclass, property } = _decorator;
 
+enum GameState {
+    Ready,
+    Playing,
+    GameOver,
+}
+
 @ccclass('GameManager')
 export class GameManager extends Component {
     @property(Node)
@@ -43,7 +49,7 @@ export class GameManager extends Component {
 
     private _score = 0;
     private _timeRemaining = 0;
-    private _gameOver = false;
+    private _state = GameState.Ready;
     private _playerController: PlayerController | null = null;
     private readonly _playerStartPosition = new Vec3();
     private readonly _playerWorldPosition = new Vec3();
@@ -57,11 +63,11 @@ export class GameManager extends Component {
             this.playerNode.getPosition(this._playerStartPosition);
         }
 
-        this.restartGame();
+        this.showReady();
     }
 
     update(deltaTime: number) {
-        if (this._gameOver) {
+        if (this._state !== GameState.Playing) {
             return;
         }
 
@@ -70,9 +76,37 @@ export class GameManager extends Component {
     }
 
     public restartGame() {
+        if (this._state === GameState.Ready || this._state === GameState.GameOver) {
+            this.startGame();
+        }
+    }
+
+    private showReady() {
+        this._state = GameState.Ready;
         this._score = 0;
         this._timeRemaining = this.gameDuration;
-        this._gameOver = false;
+
+        if (this.playerNode) {
+            this.playerNode.setPosition(this._playerStartPosition);
+        }
+
+        if (this.starNode) {
+            this.starNode.active = true;
+            this.respawnStar();
+        }
+
+        this._playerController?.setControlEnabled(false);
+        this.setMessage('Star Catcher');
+        this.setActionButtonVisible(true);
+        this.setActionButtonText('Start');
+        this.updateScoreLabel();
+        this.updateTimerLabel();
+    }
+
+    private startGame() {
+        this._state = GameState.Playing;
+        this._score = 0;
+        this._timeRemaining = this.gameDuration;
 
         if (this.playerNode) {
             this.playerNode.setPosition(this._playerStartPosition);
@@ -84,8 +118,8 @@ export class GameManager extends Component {
         }
 
         this._playerController?.setControlEnabled(true);
-        this.setRestartVisible(false);
         this.setMessage('');
+        this.setActionButtonVisible(false);
         this.updateScoreLabel();
         this.updateTimerLabel();
     }
@@ -136,10 +170,11 @@ export class GameManager extends Component {
     }
 
     private endGame() {
-        this._gameOver = true;
+        this._state = GameState.GameOver;
         this._playerController?.setControlEnabled(false);
         this.setMessage(`Game Over  Score: ${this._score}`);
-        this.setRestartVisible(true);
+        this.setActionButtonVisible(true);
+        this.setActionButtonText('Restart');
         this.updateTimerLabel();
     }
 
@@ -167,12 +202,22 @@ export class GameManager extends Component {
         this.messageLabel.string = message;
     }
 
-    private setRestartVisible(visible: boolean) {
+    private setActionButtonVisible(visible: boolean) {
         if (!this.restartButtonNode) {
             return;
         }
 
         this.restartButtonNode.active = visible;
+    }
+
+    private setActionButtonText(text: string) {
+        const buttonLabel = this.restartButtonNode?.getComponentInChildren(Label);
+
+        if (!buttonLabel) {
+            return;
+        }
+
+        buttonLabel.string = text;
     }
 
     private randomRange(min: number, max: number) {
