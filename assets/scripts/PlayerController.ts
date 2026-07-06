@@ -25,6 +25,7 @@ export class PlayerController extends Component {
     private _rightPressed = false;
     private _upPressed = false;
     private _downPressed = false;
+    private _controlEnabled = true;
 
     onEnable() {
         input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
@@ -37,6 +38,10 @@ export class PlayerController extends Component {
     }
 
     update(deltaTime: number) {
+        if (!this._controlEnabled) {
+            return;
+        }
+
         const horizontal = Number(this._rightPressed) - Number(this._leftPressed);
         const vertical = Number(this._upPressed) - Number(this._downPressed);
 
@@ -55,7 +60,19 @@ export class PlayerController extends Component {
         this.node.setPosition(this._nextPosition);
     }
 
+    public setControlEnabled(enabled: boolean) {
+        this._controlEnabled = enabled;
+
+        if (!enabled) {
+            this.clearInputState();
+        }
+    }
+
     private onKeyDown(event: EventKeyboard) {
+        if (!this._controlEnabled) {
+            return;
+        }
+
         this.updateKeyState(event.keyCode, true);
     }
 
@@ -82,6 +99,13 @@ export class PlayerController extends Component {
                 this._downPressed = pressed;
                 break;
         }
+    }
+
+    private clearInputState() {
+        this._leftPressed = false;
+        this._rightPressed = false;
+        this._upPressed = false;
+        this._downPressed = false;
     }
 
     private clamp(value: number, min: number, max: number) {
