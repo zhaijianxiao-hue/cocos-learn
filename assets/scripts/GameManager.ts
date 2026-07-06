@@ -56,6 +56,7 @@ export class GameManager extends Component {
     private _state = GameState.Ready;
     private _playerController: PlayerController | null = null;
     private _starNode: Node | null = null;
+    private _startPending = false;
     private readonly _playerStartPosition = new Vec3();
     private readonly _playerWorldPosition = new Vec3();
     private readonly _starWorldPosition = new Vec3();
@@ -82,9 +83,16 @@ export class GameManager extends Component {
     }
 
     public restartGame() {
-        if (this._state === GameState.Ready || this._state === GameState.GameOver) {
-            this.startGame();
+        if (this._startPending || (this._state !== GameState.Ready && this._state !== GameState.GameOver)) {
+            return;
         }
+
+        this._startPending = true;
+        this.audioManager?.playClick();
+        this.scheduleOnce(() => {
+            this._startPending = false;
+            this.startGame();
+        }, 0.06);
     }
 
     private createStarIfNeeded() {
@@ -119,8 +127,6 @@ export class GameManager extends Component {
     }
 
     private startGame() {
-        this.audioManager?.playClick();
-
         this._state = GameState.Playing;
         this._score = 0;
         this._timeRemaining = this.gameDuration;

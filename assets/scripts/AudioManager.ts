@@ -21,7 +21,9 @@ export class AudioManager extends Component {
     }
 
     public playClick() {
-        this.playOneShot(this.clickClip);
+        this.scheduleOnce(() => {
+            this.playOneShot(this.clickClip);
+        }, 0);
     }
 
     public playCollect() {
@@ -40,4 +42,3 @@ export class AudioManager extends Component {
         this._audioSource.playOneShot(clip);
     }
 }
-

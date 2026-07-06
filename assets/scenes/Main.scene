@@ -1277,7 +1277,7 @@
     "__prefab": null,
     "_clip": null,
     "_loop": false,
-    "_playOnAwake": true,
+    "_playOnAwake": false,
     "_volume": 1,
     "_id": "b4kVSamD1CpqBKqcw0iG7H"
   },
