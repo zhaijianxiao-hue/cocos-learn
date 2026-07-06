@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, Vec3 } from 'cc';
+import { _decorator, Component, instantiate, Label, Node, Prefab, Vec3 } from 'cc';
 import { AudioManager } from './AudioManager';
 import { PlayerController } from './PlayerController';
 
@@ -15,8 +15,8 @@ export class GameManager extends Component {
     @property(Node)
     public playerNode: Node | null = null;
 
-    @property(Node)
-    public starNode: Node | null = null;
+    @property(Prefab)
+    public starPrefab: Prefab | null = null;
 
     @property(Label)
     public scoreLabel: Label | null = null;
@@ -55,6 +55,7 @@ export class GameManager extends Component {
     private _timeRemaining = 0;
     private _state = GameState.Ready;
     private _playerController: PlayerController | null = null;
+    private _starNode: Node | null = null;
     private readonly _playerStartPosition = new Vec3();
     private readonly _playerWorldPosition = new Vec3();
     private readonly _starWorldPosition = new Vec3();
@@ -62,6 +63,7 @@ export class GameManager extends Component {
 
     start() {
         this._playerController = this.playerNode?.getComponent(PlayerController) ?? null;
+        this.createStarIfNeeded();
 
         if (this.playerNode) {
             this.playerNode.getPosition(this._playerStartPosition);
@@ -85,6 +87,15 @@ export class GameManager extends Component {
         }
     }
 
+    private createStarIfNeeded() {
+        if (this._starNode || !this.starPrefab) {
+            return;
+        }
+
+        this._starNode = instantiate(this.starPrefab);
+        this.node.parent?.addChild(this._starNode);
+    }
+
     private showReady() {
         this._state = GameState.Ready;
         this._score = 0;
@@ -94,8 +105,8 @@ export class GameManager extends Component {
             this.playerNode.setPosition(this._playerStartPosition);
         }
 
-        if (this.starNode) {
-            this.starNode.active = true;
+        if (this._starNode) {
+            this._starNode.active = true;
             this.respawnStar();
         }
 
@@ -118,8 +129,8 @@ export class GameManager extends Component {
             this.playerNode.setPosition(this._playerStartPosition);
         }
 
-        if (this.starNode) {
-            this.starNode.active = true;
+        if (this._starNode) {
+            this._starNode.active = true;
             this.respawnStar();
         }
 
@@ -140,12 +151,12 @@ export class GameManager extends Component {
     }
 
     private checkStarCollection() {
-        if (!this.playerNode || !this.starNode || !this.starNode.active) {
+        if (!this.playerNode || !this._starNode || !this._starNode.active) {
             return;
         }
 
         this.playerNode.getWorldPosition(this._playerWorldPosition);
-        this.starNode.getWorldPosition(this._starWorldPosition);
+        this._starNode.getWorldPosition(this._starWorldPosition);
 
         const offsetX = this._playerWorldPosition.x - this._starWorldPosition.x;
         const offsetY = this._playerWorldPosition.y - this._starWorldPosition.y;
@@ -165,15 +176,15 @@ export class GameManager extends Component {
     }
 
     private respawnStar() {
-        if (!this.starNode) {
+        if (!this._starNode) {
             return;
         }
 
         const nextX = this.randomRange(this.spawnMinX, this.spawnMaxX);
         const nextY = this.randomRange(this.spawnMinY, this.spawnMaxY);
         this._nextStarPosition.set(nextX, nextY, 0);
-        this.starNode.setPosition(this._nextStarPosition);
-        this.starNode.active = true;
+        this._starNode.setPosition(this._nextStarPosition);
+        this._starNode.active = true;
     }
 
     private endGame() {
