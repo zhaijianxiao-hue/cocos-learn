@@ -40,6 +40,9 @@ export class GameManager extends Component {
     public gameDuration = 20;
 
     @property
+    public starCount = 3;
+
+    @property
     public spawnMinX = -520;
 
     @property
@@ -55,8 +58,8 @@ export class GameManager extends Component {
     private _timeRemaining = 0;
     private _state = GameState.Ready;
     private _playerController: PlayerController | null = null;
-    private _starNode: Node | null = null;
     private _startPending = false;
+    private readonly _starNodes: Node[] = [];
     private readonly _playerStartPosition = new Vec3();
     private readonly _playerWorldPosition = new Vec3();
     private readonly _starWorldPosition = new Vec3();
@@ -64,7 +67,7 @@ export class GameManager extends Component {
 
     start() {
         this._playerController = this.playerNode?.getComponent(PlayerController) ?? null;
-        this.createStarIfNeeded();
+        this.createStarsIfNeeded();
 
         if (this.playerNode) {
             this.playerNode.getPosition(this._playerStartPosition);
@@ -95,13 +98,22 @@ export class GameManager extends Component {
         }, 0.06);
     }
 
-    private createStarIfNeeded() {
-        if (this._starNode || !this.starPrefab) {
+    private createStarsIfNeeded() {
+        if (!this.starPrefab || this._starNodes.length >= this.starCount) {
             return;
         }
 
-        this._starNode = instantiate(this.starPrefab);
-        this.node.parent?.addChild(this._starNode);
+        const parentNode = this.node.parent;
+
+        if (!parentNode) {
+            return;
+        }
+
+        while (this._starNodes.length < this.starCount) {
+            const starNode = instantiate(this.starPrefab);
+            parentNode.addChild(starNode);
+            this._starNodes.push(starNode);
+        }
     }
 
     private showReady() {
@@ -113,10 +125,7 @@ export class GameManager extends Component {
             this.playerNode.setPosition(this._playerStartPosition);
         }
 
-        if (this._starNode) {
-            this._starNode.active = true;
-            this.respawnStar();
-        }
+        this.respawnAllStars();
 
         this._playerController?.setControlEnabled(false);
         this.setMessage('Star Catcher');
@@ -135,10 +144,7 @@ export class GameManager extends Component {
             this.playerNode.setPosition(this._playerStartPosition);
         }
 
-        if (this._starNode) {
-            this._starNode.active = true;
-            this.respawnStar();
-        }
+        this.respawnAllStars();
 
         this._playerController?.setControlEnabled(true);
         this.setMessage('');
@@ -157,40 +163,51 @@ export class GameManager extends Component {
     }
 
     private checkStarCollection() {
-        if (!this.playerNode || !this._starNode || !this._starNode.active) {
+        if (!this.playerNode) {
             return;
         }
 
         this.playerNode.getWorldPosition(this._playerWorldPosition);
-        this._starNode.getWorldPosition(this._starWorldPosition);
 
-        const offsetX = this._playerWorldPosition.x - this._starWorldPosition.x;
-        const offsetY = this._playerWorldPosition.y - this._starWorldPosition.y;
-        const distanceSquared = offsetX * offsetX + offsetY * offsetY;
-        const collectDistanceSquared = this.collectDistance * this.collectDistance;
+        for (const starNode of this._starNodes) {
+            if (!starNode.active) {
+                continue;
+            }
 
-        if (distanceSquared <= collectDistanceSquared) {
-            this.collectStar();
+            starNode.getWorldPosition(this._starWorldPosition);
+
+            const offsetX = this._playerWorldPosition.x - this._starWorldPosition.x;
+            const offsetY = this._playerWorldPosition.y - this._starWorldPosition.y;
+            const distanceSquared = offsetX * offsetX + offsetY * offsetY;
+            const collectDistanceSquared = this.collectDistance * this.collectDistance;
+
+            if (distanceSquared <= collectDistanceSquared) {
+                this.collectStar(starNode);
+                return;
+            }
         }
     }
 
-    private collectStar() {
+    private respawnAllStars() {
+        for (const starNode of this._starNodes) {
+            starNode.active = true;
+            this.respawnStar(starNode);
+        }
+    }
+
+    private collectStar(starNode: Node) {
         this._score += 1;
         this.audioManager?.playCollect();
         this.updateScoreLabel();
-        this.respawnStar();
+        this.respawnStar(starNode);
     }
 
-    private respawnStar() {
-        if (!this._starNode) {
-            return;
-        }
-
+    private respawnStar(starNode: Node) {
         const nextX = this.randomRange(this.spawnMinX, this.spawnMaxX);
         const nextY = this.randomRange(this.spawnMinY, this.spawnMaxY);
         this._nextStarPosition.set(nextX, nextY, 0);
-        this._starNode.setPosition(this._nextStarPosition);
-        this._starNode.active = true;
+        starNode.setPosition(this._nextStarPosition);
+        starNode.active = true;
     }
 
     private endGame() {
