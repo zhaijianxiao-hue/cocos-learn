@@ -1,4 +1,5 @@
 import { _decorator, Component, Label, Node, Vec3 } from 'cc';
+import { PlayerController } from './PlayerController';
 
 const { ccclass, property } = _decorator;
 
@@ -13,8 +14,20 @@ export class GameManager extends Component {
     @property(Label)
     public scoreLabel: Label | null = null;
 
+    @property(Label)
+    public timerLabel: Label | null = null;
+
+    @property(Label)
+    public messageLabel: Label | null = null;
+
+    @property(Node)
+    public restartButtonNode: Node | null = null;
+
     @property
     public collectDistance = 58;
+
+    @property
+    public gameDuration = 20;
 
     @property
     public spawnMinX = -520;
@@ -29,15 +42,64 @@ export class GameManager extends Component {
     public spawnMaxY = 280;
 
     private _score = 0;
+    private _timeRemaining = 0;
+    private _gameOver = false;
+    private _playerController: PlayerController | null = null;
+    private readonly _playerStartPosition = new Vec3();
     private readonly _playerWorldPosition = new Vec3();
     private readonly _starWorldPosition = new Vec3();
     private readonly _nextStarPosition = new Vec3();
 
     start() {
-        this.updateScoreLabel();
+        this._playerController = this.playerNode?.getComponent(PlayerController) ?? null;
+
+        if (this.playerNode) {
+            this.playerNode.getPosition(this._playerStartPosition);
+        }
+
+        this.restartGame();
     }
 
-    update() {
+    update(deltaTime: number) {
+        if (this._gameOver) {
+            return;
+        }
+
+        this.tickTimer(deltaTime);
+        this.checkStarCollection();
+    }
+
+    public restartGame() {
+        this._score = 0;
+        this._timeRemaining = this.gameDuration;
+        this._gameOver = false;
+
+        if (this.playerNode) {
+            this.playerNode.setPosition(this._playerStartPosition);
+        }
+
+        if (this.starNode) {
+            this.starNode.active = true;
+            this.respawnStar();
+        }
+
+        this._playerController?.setControlEnabled(true);
+        this.setRestartVisible(false);
+        this.setMessage('');
+        this.updateScoreLabel();
+        this.updateTimerLabel();
+    }
+
+    private tickTimer(deltaTime: number) {
+        this._timeRemaining = Math.max(0, this._timeRemaining - deltaTime);
+        this.updateTimerLabel();
+
+        if (this._timeRemaining <= 0) {
+            this.endGame();
+        }
+    }
+
+    private checkStarCollection() {
         if (!this.playerNode || !this.starNode || !this.starNode.active) {
             return;
         }
@@ -73,12 +135,44 @@ export class GameManager extends Component {
         this.starNode.active = true;
     }
 
+    private endGame() {
+        this._gameOver = true;
+        this._playerController?.setControlEnabled(false);
+        this.setMessage(`Game Over  Score: ${this._score}`);
+        this.setRestartVisible(true);
+        this.updateTimerLabel();
+    }
+
     private updateScoreLabel() {
         if (!this.scoreLabel) {
             return;
         }
 
         this.scoreLabel.string = `Score: ${this._score}`;
+    }
+
+    private updateTimerLabel() {
+        if (!this.timerLabel) {
+            return;
+        }
+
+        this.timerLabel.string = `Time: ${Math.ceil(this._timeRemaining)}`;
+    }
+
+    private setMessage(message: string) {
+        if (!this.messageLabel) {
+            return;
+        }
+
+        this.messageLabel.string = message;
+    }
+
+    private setRestartVisible(visible: boolean) {
+        if (!this.restartButtonNode) {
+            return;
+        }
+
+        this.restartButtonNode.active = visible;
     }
 
     private randomRange(min: number, max: number) {
