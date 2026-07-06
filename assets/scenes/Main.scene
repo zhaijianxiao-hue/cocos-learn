@@ -814,7 +814,7 @@
       "b": 255,
       "a": 255
     },
-    "_string": "label",
+    "_string": "Star Catcher",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 42,
@@ -916,7 +916,7 @@
     "__prefab": null,
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 88.7373046875,
+      "width": 235.7578125,
       "height": 50.4
     },
     "_anchorPoint": {
@@ -1071,7 +1071,7 @@
       "b": 0,
       "a": 255
     },
-    "_string": "Restart",
+    "_string": "Start",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 20,
