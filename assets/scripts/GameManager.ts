@@ -16,9 +16,22 @@ export class GameManager extends Component {
     @property
     public collectDistance = 58;
 
+    @property
+    public spawnMinX = -520;
+
+    @property
+    public spawnMaxX = 520;
+
+    @property
+    public spawnMinY = -280;
+
+    @property
+    public spawnMaxY = 280;
+
     private _score = 0;
     private readonly _playerWorldPosition = new Vec3();
     private readonly _starWorldPosition = new Vec3();
+    private readonly _nextStarPosition = new Vec3();
 
     start() {
         this.updateScoreLabel();
@@ -44,12 +57,20 @@ export class GameManager extends Component {
 
     private collectStar() {
         this._score += 1;
+        this.updateScoreLabel();
+        this.respawnStar();
+    }
 
-        if (this.starNode) {
-            this.starNode.active = false;
+    private respawnStar() {
+        if (!this.starNode) {
+            return;
         }
 
-        this.updateScoreLabel();
+        const nextX = this.randomRange(this.spawnMinX, this.spawnMaxX);
+        const nextY = this.randomRange(this.spawnMinY, this.spawnMaxY);
+        this._nextStarPosition.set(nextX, nextY, 0);
+        this.starNode.setPosition(this._nextStarPosition);
+        this.starNode.active = true;
     }
 
     private updateScoreLabel() {
@@ -58,5 +79,9 @@ export class GameManager extends Component {
         }
 
         this.scoreLabel.string = `Score: ${this._score}`;
+    }
+
+    private randomRange(min: number, max: number) {
+        return min + Math.random() * (max - min);
     }
 }
