@@ -319,6 +319,10 @@
     "_enabled": true,
     "__prefab": null,
     "moveSpeed": 320,
+    "minX": -560,
+    "maxX": 560,
+    "minY": -300,
+    "maxY": 300,
     "_id": "f7/DlNX9ROzLIvv40hm7Vd"
   },
   {
