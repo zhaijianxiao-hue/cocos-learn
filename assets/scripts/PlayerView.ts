@@ -20,8 +20,8 @@ export class PlayerView extends Component {
     }
 
     private draw() {
-        const transform = this.getComponent(UITransform)!;
-        const graphics = this.getComponent(Graphics)!;
+        const transform = this.getComponent(UITransform) ?? this.addComponent(UITransform);
+        const graphics = this.getComponent(Graphics) ?? this.addComponent(Graphics);
 
         transform.setContentSize(this.width, this.height);
 
