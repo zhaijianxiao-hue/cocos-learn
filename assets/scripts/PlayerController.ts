@@ -7,6 +7,18 @@ export class PlayerController extends Component {
     @property
     public moveSpeed = 320;
 
+    @property
+    public minX = -560;
+
+    @property
+    public maxX = 560;
+
+    @property
+    public minY = -300;
+
+    @property
+    public maxY = 300;
+
     private readonly _moveDirection = new Vec3();
     private readonly _nextPosition = new Vec3();
     private _leftPressed = false;
@@ -38,6 +50,8 @@ export class PlayerController extends Component {
         this.node.getPosition(this._nextPosition);
         this._nextPosition.x += this._moveDirection.x * this.moveSpeed * deltaTime;
         this._nextPosition.y += this._moveDirection.y * this.moveSpeed * deltaTime;
+        this._nextPosition.x = this.clamp(this._nextPosition.x, this.minX, this.maxX);
+        this._nextPosition.y = this.clamp(this._nextPosition.y, this.minY, this.maxY);
         this.node.setPosition(this._nextPosition);
     }
 
@@ -68,5 +82,9 @@ export class PlayerController extends Component {
                 this._downPressed = pressed;
                 break;
         }
+    }
+
+    private clamp(value: number, min: number, max: number) {
+        return Math.min(Math.max(value, min), max);
     }
 }
