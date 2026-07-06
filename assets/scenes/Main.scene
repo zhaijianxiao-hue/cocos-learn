@@ -572,6 +572,7 @@
     },
     "collectDistance": 58,
     "gameDuration": 20,
+    "starCount": 3,
     "spawnMinX": -520,
     "spawnMaxX": 520,
     "spawnMinY": -280,
