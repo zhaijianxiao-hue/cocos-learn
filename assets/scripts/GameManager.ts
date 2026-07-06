@@ -1,4 +1,5 @@
 import { _decorator, Component, Label, Node, Vec3 } from 'cc';
+import { AudioManager } from './AudioManager';
 import { PlayerController } from './PlayerController';
 
 const { ccclass, property } = _decorator;
@@ -28,6 +29,9 @@ export class GameManager extends Component {
 
     @property(Node)
     public restartButtonNode: Node | null = null;
+
+    @property(AudioManager)
+    public audioManager: AudioManager | null = null;
 
     @property
     public collectDistance = 58;
@@ -104,6 +108,8 @@ export class GameManager extends Component {
     }
 
     private startGame() {
+        this.audioManager?.playClick();
+
         this._state = GameState.Playing;
         this._score = 0;
         this._timeRemaining = this.gameDuration;
@@ -153,6 +159,7 @@ export class GameManager extends Component {
 
     private collectStar() {
         this._score += 1;
+        this.audioManager?.playCollect();
         this.updateScoreLabel();
         this.respawnStar();
     }
@@ -171,6 +178,7 @@ export class GameManager extends Component {
 
     private endGame() {
         this._state = GameState.GameOver;
+        this.audioManager?.playGameOver();
         this._playerController?.setControlEnabled(false);
         this.setMessage(`Game Over  Score: ${this._score}`);
         this.setActionButtonVisible(true);
