@@ -132,7 +132,7 @@ export class GameManager extends Component {
         this.respawnAllStars();
 
         this._playerController?.setControlEnabled(false);
-        this.setMessage('Star Catcher');
+        this.setMessage('Space Collector');
         this.setActionButtonVisible(true);
         this.setActionButtonText('Start');
         this.updateScoreLabel();
@@ -232,7 +232,7 @@ export class GameManager extends Component {
         this._state = GameState.GameOver;
         this.audioManager?.playGameOver();
         this._playerController?.setControlEnabled(false);
-        this.setMessage(`Game Over  Score: ${this._score}`);
+        this.setMessage(`Mission Over  Energy: ${this._score}`);
         this.setActionButtonVisible(true);
         this.setActionButtonText('Restart');
         this.updateTimerLabel();
@@ -243,7 +243,7 @@ export class GameManager extends Component {
             return;
         }
 
-        this.scoreLabel.string = `Score: ${this._score}`;
+        this.scoreLabel.string = `Energy: ${this._score}`;
     }
 
     private updateTimerLabel() {
