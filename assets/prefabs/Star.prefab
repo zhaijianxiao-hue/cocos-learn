@@ -99,14 +99,11 @@
     "__prefab": {
       "__id__": 5
     },
-    "radius": 28,
-    "fillColor": {
-      "__type__": "cc.Color",
-      "r": 255,
-      "g": 220,
-      "b": 80,
-      "a": 255
+    "spriteFrame": {
+      "__uuid__": "ed37def9-4c06-44ba-a0c6-a0cc37a0c191@f9941",
+      "__expectedType__": "cc.SpriteFrame"
     },
+    "size": 44,
     "_id": ""
   },
   {
@@ -122,6 +119,7 @@
       "__id__": 0
     },
     "fileId": "6c8xs17PBGH7zLB5HusWCw",
+    "instance": null,
     "targetOverrides": null
   }
 ]
