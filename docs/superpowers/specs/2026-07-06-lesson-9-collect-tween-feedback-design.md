@@ -130,14 +130,14 @@ Playing 状态
 -> 命中某个 starNode
 -> collectStar(starNode)
 -> 加分和音效立即发生
--> starNode.active = false，避免动画期间重复收集
+-> 把 starNode 记录进 _collectingStars，避免动画期间重复收集
 -> Tween 缩放到 0
 -> Tween 回调里随机重生该 starNode
 -> scale 恢复为 1
--> starNode.active = true
+-> 从 _collectingStars 移除，恢复可收集状态
 ```
 
-这里会先把星星设为 inactive，避免动画期间同一个星星在多帧内被重复吃到。动效结束后再恢复 active。
+这里不把星星设为 inactive，因为 inactive 会让节点隐藏，玩家看不到缩放动效。更合适的做法是用 `_collectingStars: Set<Node>` 记录正在播放收集动效的星星，检测时跳过它。
 
 ## 验收标准
 
@@ -160,5 +160,5 @@ Playing 状态
 - `to(duration, { scale: ... })` 表示在指定时间内把 scale 变到目标值。
 - `call()` 可以在 Tween 中插入逻辑回调。
 - 为什么动效期间要避免重复收集。
+- 为什么不能用 `active = false` 来做这次防重复，因为它会隐藏动效对象。
 - 为什么表现反馈应该围绕玩法事件，而不是改变玩法规则。
-
