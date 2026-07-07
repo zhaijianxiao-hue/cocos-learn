@@ -1,4 +1,4 @@
-import { _decorator, Component, instantiate, Label, Node, Prefab, Vec3 } from 'cc';
+import { _decorator, Component, instantiate, Label, Node, Prefab, tween, Vec3 } from 'cc';
 import { AudioManager } from './AudioManager';
 import { PlayerController } from './PlayerController';
 
@@ -37,6 +37,9 @@ export class GameManager extends Component {
     public collectDistance = 58;
 
     @property
+    public collectScaleDuration = 0.08;
+
+    @property
     public gameDuration = 20;
 
     @property
@@ -60,6 +63,7 @@ export class GameManager extends Component {
     private _playerController: PlayerController | null = null;
     private _startPending = false;
     private readonly _starNodes: Node[] = [];
+    private readonly _collectingStars = new Set<Node>();
     private readonly _playerStartPosition = new Vec3();
     private readonly _playerWorldPosition = new Vec3();
     private readonly _starWorldPosition = new Vec3();
@@ -170,7 +174,7 @@ export class GameManager extends Component {
         this.playerNode.getWorldPosition(this._playerWorldPosition);
 
         for (const starNode of this._starNodes) {
-            if (!starNode.active) {
+            if (!starNode.active || this._collectingStars.has(starNode)) {
                 continue;
             }
 
@@ -189,6 +193,8 @@ export class GameManager extends Component {
     }
 
     private respawnAllStars() {
+        this._collectingStars.clear();
+
         for (const starNode of this._starNodes) {
             starNode.active = true;
             this.respawnStar(starNode);
@@ -199,7 +205,18 @@ export class GameManager extends Component {
         this._score += 1;
         this.audioManager?.playCollect();
         this.updateScoreLabel();
-        this.respawnStar(starNode);
+        this.playCollectFeedback(starNode);
+    }
+
+    private playCollectFeedback(starNode: Node) {
+        this._collectingStars.add(starNode);
+        tween(starNode)
+            .to(this.collectScaleDuration, { scale: Vec3.ZERO })
+            .call(() => {
+                this.respawnStar(starNode);
+                this._collectingStars.delete(starNode);
+            })
+            .start();
     }
 
     private respawnStar(starNode: Node) {
@@ -207,6 +224,7 @@ export class GameManager extends Component {
         const nextY = this.randomRange(this.spawnMinY, this.spawnMaxY);
         this._nextStarPosition.set(nextX, nextY, 0);
         starNode.setPosition(this._nextStarPosition);
+        starNode.setScale(Vec3.ONE);
         starNode.active = true;
     }
 
