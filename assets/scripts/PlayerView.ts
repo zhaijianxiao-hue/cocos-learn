@@ -1,33 +1,29 @@
-import { _decorator, Color, Component, Graphics, UITransform } from 'cc';
+import { _decorator, Component, Sprite, SpriteFrame, UITransform } from 'cc';
 
 const { ccclass, property, requireComponent } = _decorator;
 
 @ccclass('PlayerView')
 @requireComponent(UITransform)
-@requireComponent(Graphics)
+@requireComponent(Sprite)
 export class PlayerView extends Component {
+    @property(SpriteFrame)
+    public spriteFrame: SpriteFrame | null = null;
+
     @property
-    public width = 64;
+    public width = 76;
 
     @property
     public height = 64;
 
-    @property
-    public fillColor = new Color(70, 170, 255, 255);
-
     start() {
-        this.draw();
+        this.applyView();
     }
 
-    private draw() {
+    private applyView() {
         const transform = this.getComponent(UITransform) ?? this.addComponent(UITransform);
-        const graphics = this.getComponent(Graphics) ?? this.addComponent(Graphics);
+        const sprite = this.getComponent(Sprite) ?? this.addComponent(Sprite);
 
         transform.setContentSize(this.width, this.height);
-
-        graphics.clear();
-        graphics.fillColor = this.fillColor;
-        graphics.roundRect(-this.width / 2, -this.height / 2, this.width, this.height, 8);
-        graphics.fill();
+        sprite.spriteFrame = this.spriteFrame;
     }
 }

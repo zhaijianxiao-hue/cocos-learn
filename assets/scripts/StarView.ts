@@ -1,35 +1,26 @@
-import { _decorator, Color, Component, Graphics, UITransform } from 'cc';
+import { _decorator, Component, Sprite, SpriteFrame, UITransform } from 'cc';
 
-const { ccclass, property } = _decorator;
+const { ccclass, property, requireComponent } = _decorator;
 
 @ccclass('StarView')
+@requireComponent(UITransform)
+@requireComponent(Sprite)
 export class StarView extends Component {
-    @property
-    public radius = 28;
+    @property(SpriteFrame)
+    public spriteFrame: SpriteFrame | null = null;
 
     @property
-    public fillColor = new Color(255, 220, 80, 255);
+    public size = 44;
 
     start() {
-        this.draw();
+        this.applyView();
     }
 
-    private draw() {
-        let transform = this.getComponent(UITransform);
-        if (!transform) {
-            transform = this.addComponent(UITransform);
-        }
+    private applyView() {
+        const transform = this.getComponent(UITransform) ?? this.addComponent(UITransform);
+        const sprite = this.getComponent(Sprite) ?? this.addComponent(Sprite);
 
-        let graphics = this.getComponent(Graphics);
-        if (!graphics) {
-            graphics = this.addComponent(Graphics);
-        }
-
-        transform.setContentSize(this.radius * 2, this.radius * 2);
-
-        graphics.clear();
-        graphics.fillColor = this.fillColor;
-        graphics.circle(0, 0, this.radius);
-        graphics.fill();
+        transform.setContentSize(this.size, this.size);
+        sprite.spriteFrame = this.spriteFrame;
     }
 }
